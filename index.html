@@ -98,28 +98,27 @@
 <div id="trainInfo" class="train-info"></div>
 
 <script>
-    // API Endpoint
-    const apiUrl = "https://api.deutschebahn.com/free-api/v1/"; // Beispiel, ggf. anpassen
     const apiKey = "4529e0d138923d0303c90a2261e4d5c3"; // Dein API Key hier
-
-    // Versuche, die Daten abzurufen
+    const apiUrl = "https://api.deutschebahn.com/free-api/v1/"; // Deutsche Bahn API-Base-URL
+    
+    // Funktion um Daten von der DB API abzurufen
     async function fetchTrainData(station) {
-        const response = await fetch(`${apiUrl}trainstation/${station}/arrivals`, {
+        const url = `${apiUrl}trainstation/${station}/arrivals`; // API-URL für Zugankünfte
+        const response = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${apiKey}`
             }
         });
 
         if (response.ok) {
-            const data = await response.json();
-            return data;
+            return response.json();
         } else {
-            console.error('Fehler beim Abrufen der Daten');
+            console.error('Fehler beim Abrufen der Daten', response.status);
             return null;
         }
     }
 
-    // Funktion, um die Bahndaten auf der Webseite anzuzeigen
+    // Anzeige der Zugdaten auf der Webseite
     async function searchTrainData() {
         const station = document.getElementById("stationSearch").value.trim();
 
@@ -129,7 +128,7 @@
         }
 
         const data = await fetchTrainData(station);
-
+        
         if (data && data.length > 0) {
             displayTrainData(data);
         } else {
@@ -137,7 +136,7 @@
         }
     }
 
-    // Anzeige der Bahndaten auf der Webseite
+    // Funktion, um die Daten darzustellen
     function displayTrainData(data) {
         let htmlContent = "<h3>Ankünfte und Abfahrten</h3>";
         htmlContent += "<table><tr><th>Zugnummer</th><th>Ziel</th><th>Abfahrt</th><th>Status</th></tr>";
