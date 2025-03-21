@@ -4,21 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nordbahn Live-Abfahrten</title>
-    <!-- Meta-Tags für die iOS-Web-App -->
     <meta name="apple-mobile-web-app-title" content="Nordbahn Live-Abfahrten">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <meta name="theme-color" content="#0c3b6c">
 
-    <!-- Meta-Tag für Browser -->
-    <meta name="theme-color" content="#0c3b6c"> <!-- Passend zum Nordbahn-Blau -->
-
-    <!-- CSS und JavaScript -->
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0c3b6c; /* Dunkelblau Nordbahn */
+            background-color: #0c3b6c;
             color: white;
             text-align: center;
             margin: 0;
@@ -26,7 +22,7 @@
         }
 
         header {
-            background-color: #e4e4e4; /* Grau */
+            background-color: #e4e4e4;
             padding: 20px;
         }
 
@@ -45,7 +41,7 @@
         }
 
         button {
-            background-color: #007ac2; /* Nordbahn-Blau */
+            background-color: #007ac2;
             color: white;
             border: none;
             cursor: pointer;
@@ -100,44 +96,30 @@
             <button onclick="searchStation()">Suchen</button>
         </div>
 
-        <div class="search-container">
-            <input type="text" id="trainSearch" placeholder="Zugnummer eingeben...">
-            <button onclick="searchTrain()">Suche Zug</button>
-        </div>
-
         <div id="results"></div>
     </main>
 
     <script>
-        const API_URL = "https://v5.db.transport.rest";
+        const API_URL = "https://api.nah.sh/v1/arrivals/";
 
         function searchStation() {
             let station = document.getElementById("stationSearch").value;
-            fetch(`${API_URL}/stations?query=${station}`)
+            fetch(`${API_URL}?station=${station}`)
                 .then(response => response.json())
-                .then(data => displayResults(data, "station"))
+                .then(data => displayResults(data))
                 .catch(error => console.error("Fehler:", error));
         }
 
-        function searchTrain() {
-            let trainNumber = document.getElementById("trainSearch").value;
-            fetch(`${API_URL}/trips?query=${trainNumber}`)
-                .then(response => response.json())
-                .then(data => displayResults(data, "train"))
-                .catch(error => console.error("Fehler:", error));
-        }
-
-        function displayResults(data, type) {
+        function displayResults(data) {
             let resultsDiv = document.getElementById("results");
             resultsDiv.innerHTML = "";
 
-            if (type === "station" && data.length > 0) {
-                data.forEach(station => {
-                    resultsDiv.innerHTML += `<p><strong>${station.name}</strong> (ID: ${station.id})</p>`;
-                });
-            } else if (type === "train" && data.length > 0) {
-                data.forEach(train => {
-                    resultsDiv.innerHTML += `<p><strong>Zug: ${train.line.name}</strong> - Richtung: ${train.direction}</p>`;
+            if (data.length > 0) {
+                data.forEach(item => {
+                    resultsDiv.innerHTML += `
+                        <p><strong>${item.line.name}</strong> - ${item.station.name} - ${item.expectedArrival}</p>
+                        <p>Richtung: ${item.direction} - Verspätung: ${item.delay ? item.delay + ' Min' : 'Keine Verspätung'}</p>
+                    `;
                 });
             } else {
                 resultsDiv.innerHTML = "<p>Keine Daten gefunden.</p>";
