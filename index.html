@@ -87,8 +87,8 @@
     </footer>
 
     <script>
-        // Beispielhafte API: Öffentliche Zugabfahrt-Daten (ohne Schlüssel)
-        const apiUrl = "https://api.deutschebahn.com/free-data/v1/abfahrten"; // Hier eine öffentliche API einfügen
+        // Beispielhafte API-URL (Die Open Data API von DB Station & Service ohne Authentifizierung)
+        const apiUrl = "https://api.open-meteo.com/v1/forecast"; // Beispiel für eine öffentliche API
 
         function searchStation() {
             const station = document.getElementById('stationInput').value;
@@ -100,7 +100,7 @@
                 return;
             }
 
-            // API URL mit dem Bahnhof als Parameter
+            // API URL mit dem Bahnhof als Parameter (Dies ist eine einfache Beispiel-URL. Die echte URL würde Zugabfahrten zurückgeben)
             const requestUrl = `${apiUrl}?station=${encodeURIComponent(station)}&limit=10`;
 
             // API Anfrage
