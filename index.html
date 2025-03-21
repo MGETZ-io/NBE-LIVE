@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nordbahn Live-Abfahrten</title>
+    <!-- Meta-Tags für die iOS-Web-App -->
+    <meta name="apple-mobile-web-app-title" content="Nordbahn Live-Abfahrten">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+
+    <!-- Meta-Tag für Browser -->
+    <meta name="theme-color" content="#0c3b6c"> <!-- Passend zum Nordbahn-Blau -->
+
+    <!-- CSS und JavaScript -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0c3b6c; /* Dunkelblau Nordbahn */
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #e4e4e4; /* Grau */
+            padding: 20px;
+        }
+
+        h1 {
+            color: #0c3b6c;
+        }
+
+        .search-container {
+            margin: 20px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007ac2; /* Nordbahn-Blau */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005b8f;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: white;
+            color: black;
+            display: inline-block;
+            text-align: left;
+        }
+
+        /* Für kleine Geräte */
+        @media screen and (max-width: 768px) {
+            input, button {
+                width: 80%;
+                font-size: 14px;
+            }
+
+            header {
+                padding: 10px;
+            }
+        }
+
+        /* Vollbildmodus für iOS */
+        @media screen and (display-mode: standalone) {
+            body {
+                background-color: white;
+                color: black;
+            }
+
+            header {
+                background-color: #e4e4e4;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Nordbahn Live-Abfahrten</h1>
+    </header>
+    
+    <main>
+        <div class="search-container">
+            <input type="text" id="stationSearch" placeholder="Bahnhof suchen...">
+            <button onclick="searchStation()">Suchen</button>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="trainSearch" placeholder="Zugnummer eingeben...">
+            <button onclick="searchTrain()">Suche Zug</button>
+        </div>
+
+        <div id="results"></div>
+    </main>
+
+    <script>
+        const API_URL = "https://v5.db.transport.rest";
+
+        function searchStation() {
+            let station = document.getElementById("stationSearch").value;
+            fetch(`${API_URL}/stations?query=${station}`)
+                .then(response => response.json())
+                .then(data => displayResults(data, "station"))
+                .catch(error => console.error("Fehler:", error));
+        }
+
+        function searchTrain() {
+            let trainNumber = document.getElementById("trainSearch").value;
+            fetch(`${API_URL}/trips?query=${trainNumber}`)
+                .then(response => response.json())
+                .then(data => displayResults(data, "train"))
+                .catch(error => console.error("Fehler:", error));
+        }
+
+        function displayResults(data, type) {
+            let resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            if (type === "station" && data.length > 0) {
+                data.forEach(station => {
+                    resultsDiv.innerHTML += `<p><strong>${station.name}</strong> (ID: ${station.id})</p>`;
+                });
+            } else if (type === "train" && data.length > 0) {
+                data.forEach(train => {
+                    resultsDiv.innerHTML += `<p><strong>Zug: ${train.line.name}</strong> - Richtung: ${train.direction}</p>`;
+                });
+            } else {
+                resultsDiv.innerHTML = "<p>Keine Daten gefunden.</p>";
+            }
+        }
+    </script>
+</body>
+</html>
