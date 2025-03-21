@@ -3,151 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deutsche Bahn Live-Abfahrten</title>
-    <meta name="apple-mobile-web-app-title" content="DB Live-Abfahrten">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-    <meta name="theme-color" content="#0033a0">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0033a0;
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #ffffff;
-            padding: 20px;
-        }
-
-        h1 {
-            color: #0033a0;
-        }
-
-        .search-container {
-            margin: 20px;
-        }
-
-        input, button {
-            padding: 10px;
-            margin: 5px;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: #007ac2;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #005b8f;
-        }
-
-        #results {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: white;
-            color: black;
-            display: inline-block;
-            text-align: left;
-        }
-
-        @media screen and (max-width: 768px) {
-            input, button {
-                width: 80%;
-                font-size: 14px;
-            }
-
-            header {
-                padding: 10px;
-            }
-        }
-
-        @media screen and (display-mode: standalone) {
-            body {
-                background-color: white;
-                color: black;
-            }
-
-            header {
-                background-color: #ffffff;
-            }
-        }
-    </style>
+    <title>Nordbahn Abfahrtstafel</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>DB Live-Abfahrten</h1>
-    </header>
-    
-    <main>
-        <div class="search-container">
-            <input type="text" id="stationSearch" placeholder="Bahnhof suchen...">
-            <button onclick="searchStation()">Suchen</button>
-        </div>
-
-        <div id="results"></div>
-    </main>
+    <div class="container">
+        <h1>Abfahrten und Ankünfte für Nordbahn Züge</h1>
+        <input type="text" id="stationSearch" placeholder="Bahnhof suchen...">
+        <button id="searchButton">Suchen</button>
+        <ul id="departureList"></ul>
+    </div>
 
     <script>
-        const API_URL = "https://api.deutschebahn.com/freeplan/v1/arrival"; // Beispiel API-Endpunkt
-        const API_KEY = "DEIN_API_KEY"; // Deinen API-Key hier einfügen
+        // Funktion, um Abfahrten für einen Bahnhof zu erhalten
+        async function getDepartures(station) {
+            const url = `https://api.fahrplan.de/v1/departures?station=${station}`;
 
-        function searchStation() {
-            let station = document.getElementById("stationSearch").value;
-            if (station.trim() === "") {
-                alert("Bitte einen Bahnhof eingeben.");
-                return;
-            }
-
-            // API-Aufruf mit der Station als Parameter
-            fetch(`${API_URL}?station=${encodeURIComponent(station)}`, {
-                headers: {
-                    "Authorization": `Bearer ${API_KEY}`
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error("Fehler beim Abrufen der Daten");
                 }
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error(`Fehler: ${response.status}`);
-                }
-            })
-            .then(data => displayResults(data))
-            .catch(error => {
-                console.error("Fehler beim Abrufen der Daten:", error);
-                document.getElementById("results").innerHTML = `<p>Fehler beim Abrufen der Daten. Bitte versuche es später erneut.</p>`;
-            });
-        }
 
-        function displayResults(data) {
-            let resultsDiv = document.getElementById("results");
-            resultsDiv.innerHTML = "<h2>Abfahrten:</h2>";
+                const data = await response.json();
+                const departures = data.departures;
 
-            if (data && data.length > 0) {
-                data.forEach(departure => {
-                    resultsDiv.innerHTML += `
-                        <div>
-                            <p><strong>Fahrt:</strong> ${departure.train.name}</p>
-                            <p><strong>Abfahrt:</strong> ${departure.expectedDeparture}</p>
-                            <p><strong>Ziel:</strong> ${departure.station.name}</p>
-                            <p><strong>Verspätung:</strong> ${departure.delay || "Keine Verspätung"}</p>
-                            <hr>
-                        </div>
-                    `;
+                // Leere Liste, bevor neue Ergebnisse angezeigt werden
+                const departureList = document.getElementById('departureList');
+                departureList.innerHTML = '';
+
+                departures.forEach(departure => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `Abfahrt nach ${departure.destination} um ${departure.time}`;
+                    departureList.appendChild(listItem);
                 });
-            } else {
-                resultsDiv.innerHTML = "<p>Keine Abfahrten gefunden.</p>";
+            } catch (error) {
+                alert('Fehler beim Abrufen der Daten: ' + error.message);
             }
         }
+
+        // Event listener für den Suchbutton
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const station = document.getElementById('stationSearch').value;
+            if (station) {
+                getDepartures(station);
+            } else {
+                alert('Bitte gib einen Bahnhof ein.');
+            }
+        });
     </script>
 </body>
 </html>
