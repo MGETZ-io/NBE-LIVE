@@ -87,9 +87,9 @@
     </footer>
 
     <script>
-        // Beispielhafte API-URL (Die Open Data API von DB Station & Service ohne Authentifizierung)
-        const apiUrl = "https://api.open-meteo.com/v1/forecast"; // Beispiel für eine öffentliche API
+        const apiUrl = "https://api.deutschebahn.com/freeplan/v1/arrivalBoard"; // DB API URL für Abfahrtsdaten
 
+        // Funktion zur Abfahrtssuche
         function searchStation() {
             const station = document.getElementById('stationInput').value;
             const departureList = document.getElementById('departureList');
@@ -100,7 +100,7 @@
                 return;
             }
 
-            // API URL mit dem Bahnhof als Parameter (Dies ist eine einfache Beispiel-URL. Die echte URL würde Zugabfahrten zurückgeben)
+            // API URL mit dem Bahnhof als Parameter
             const requestUrl = `${apiUrl}?station=${encodeURIComponent(station)}&limit=10`;
 
             // API Anfrage
@@ -112,8 +112,10 @@
                             const listItem = document.createElement('li');
                             const isNordbahn = departure.trainNumber && departure.trainNumber.startsWith("NBE");
 
-                            listItem.classList.add(isNordbahn ? 'nbe' : ''); // Wenn NBE, dann spezielle Klasse
+                            // Nordbahn-Züge hervorheben
+                            listItem.classList.add(isNordbahn ? 'nbe' : '');
 
+                            // Abfahrtsinformation einfügen
                             listItem.innerHTML = `
                                 <strong>${departure.time}</strong> - ${departure.destination}<br>
                                 Zugnummer: ${departure.trainNumber}<br>
