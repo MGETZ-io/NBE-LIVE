@@ -4,31 +4,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nordbahn Abfahrtstafel</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Grundlegendes Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body-Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header-Styles */
+        header {
+            background-color: #0078a0; /* Nordbahn Blau */
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: inline-block;
+        }
+
+        .logo {
+            height: 40px;
+        }
+
+        /* Suchbereich */
+        .search-section {
+            background-color: #e5e9f2;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .search-section h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0078a0;
+        }
+
+        #stationSearch {
+            padding: 10px;
+            width: 80%;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #searchButton {
+            padding: 10px 20px;
+            background-color: #0078a0;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #searchButton:hover {
+            background-color: #005f7f;
+        }
+
+        /* Abschnitt für die Abfahrten */
+        .departure-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        #departureList {
+            list-style: none;
+            padding: 0;
+        }
+
+        #departureList li {
+            padding: 10px;
+            background-color: #ffffff;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        #departureList li:nth-child(even) {
+            background-color: #f4f7f9;
+        }
+
+        #departureList li:hover {
+            background-color: #dfe9f5;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Header mit Logo und Navigation -->
+    <header>
+        <div class="logo-container">
+            <img src="https://www.nordbahn.de/fileadmin/_processed_/1/8/csm_Nordbahn_Logo_NAS_H_RGB_680x213_6d8f855aaa.png" alt="Nordbahn Logo" class="logo">
+        </div>
+    </header>
+
+    <!-- Suchbereich -->
+    <section class="search-section">
         <h1>Abfahrten und Ankünfte für Nordbahn Züge</h1>
-        <input type="text" id="stationSearch" placeholder="Bahnhof suchen...">
+        <input type="text" id="stationSearch" placeholder="Bahnhof suchen..." aria-label="Bahnhof suchen">
         <button id="searchButton">Suchen</button>
+    </section>
+
+    <!-- Anzeige der Abfahrten -->
+    <section class="departure-section">
         <ul id="departureList"></ul>
-    </div>
+    </section>
 
     <script>
-        // Funktion, um Abfahrten für einen Bahnhof zu erhalten
+        // Funktion zur Abfrage der Abfahrten und Ankünfte
         async function getDepartures(station) {
-            const url = `https://api.fahrplan.de/v1/departures?station=${station}`;
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=54.0&longitude=10.0&hourly=temperature_2m`;
 
             try {
-                const response = await fetch(url);
+                const response = await fetch(proxyUrl + apiUrl);
                 if (!response.ok) {
                     throw new Error("Fehler beim Abrufen der Daten");
                 }
 
                 const data = await response.json();
-                const departures = data.departures;
+                const departures = data.hourly;
 
-                // Leere Liste, bevor neue Ergebnisse angezeigt werden
                 const departureList = document.getElementById('departureList');
                 departureList.innerHTML = '';
 
@@ -42,7 +148,7 @@
             }
         }
 
-        // Event listener für den Suchbutton
+        // Suchbutton-Event
         document.getElementById('searchButton').addEventListener('click', () => {
             const station = document.getElementById('stationSearch').value;
             if (station) {
