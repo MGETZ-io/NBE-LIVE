@@ -98,17 +98,12 @@
 <div id="trainInfo" class="train-info"></div>
 
 <script>
-    const apiKey = "4529e0d138923d0303c90a2261e4d5c3"; // Dein API Key hier
-    const apiUrl = "https://api.deutschebahn.com/free-api/v1/"; // Deutsche Bahn API-Base-URL
-    
-    // Funktion um Daten von der DB API abzurufen
+    const apiUrl = "https://api.deutschebahn.com/free-api/v1/"; // OpenData API URL
+
+    // Funktion um Daten von der OpenData API abzurufen
     async function fetchTrainData(station) {
-        const url = `${apiUrl}trainstation/${station}/arrivals`; // API-URL für Zugankünfte
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            }
-        });
+        const url = `https://api.deutschebahn.com/free-api/v1/arrivals?station=${station}`; // API-URL für Zugankünfte
+        const response = await fetch(url);
 
         if (response.ok) {
             return response.json();
