@@ -3,139 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#005F8D">
-    <title>Abfahrtsanzeige Nordbahn Züge</title>
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Nordbahn_Logo.svg/1280px-Nordbahn_Logo.svg.png">
+    <title>Nordbahn Echtzeitdaten</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #f5f5f5;
             color: #333;
             margin: 0;
             padding: 0;
         }
+
         header {
-            background-color: #005F8D;
-            padding: 15px;
+            background-color: #005B8A; /* Nordbahn-Blau */
             color: white;
+            padding: 20px;
             text-align: center;
         }
-        .search-box {
-            display: flex;
-            justify-content: center;
-            margin: 20px;
+
+        header h1 {
+            font-size: 2em;
         }
-        .search-box input {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 80%;
+
+        .search-container {
+            padding: 20px;
+            text-align: center;
         }
-        .search-box button {
+
+        .search-container input[type="text"] {
             padding: 10px;
+            width: 200px;
             font-size: 16px;
-            background-color: #00A8E8;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            background-color: #005B8A;
             color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
-        .search-box button:hover {
-            background-color: #007B8F;
+
+        .search-container button:hover {
+            background-color: #004a74;
         }
-        .departure-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .departure-list li {
+
+        .train-info {
+            padding: 20px;
             background-color: white;
-            margin: 5px;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .nbe {
-            background-color: #ffdb58;
-            border-left: 5px solid #ff9800;
+
+        .train-info h3 {
+            color: #005B8A;
         }
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #005F8D;
-            color: white;
-            position: fixed;
-            bottom: 0;
+
+        .train-info table {
             width: 100%;
+            border-collapse: collapse;
+        }
+
+        .train-info table, .train-info th, .train-info td {
+            border: 1px solid #ddd;
+        }
+
+        .train-info th, .train-info td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .train-info th {
+            background-color: #f2f2f2;
+        }
+
+        .train-info .delayed {
+            color: red;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Abfahrtsanzeige Nordbahn Züge</h1>
-    </header>
 
-    <div class="search-box">
-        <input type="text" id="stationInput" placeholder="Gib einen Bahnhof ein...">
-        <button onclick="searchStation()">Suchen</button>
-    </div>
+<header>
+    <h1>Nordbahn Echtzeitdaten</h1>
+</header>
 
-    <ul id="departureList" class="departure-list"></ul>
+<div class="search-container">
+    <input type="text" id="stationSearch" placeholder="Bahnhof suchen...">
+    <button onclick="searchTrainData()">Suchen</button>
+</div>
 
-    <footer>
-        <p>&copy; 2025 Nordbahn | Alle Rechte vorbehalten</p>
-    </footer>
+<div id="trainInfo" class="train-info"></div>
 
-    <script>
-        const apiUrl = "https://api.deutschebahn.com/freeplan/v1/arrivalBoard"; // DB API URL für Abfahrtsdaten
+<script>
+    // API Endpoint
+    const apiUrl = "https://api.deutschebahn.com/free-api/v1/"; // Beispiel, ggf. anpassen
+    const apiKey = "4529e0d138923d0303c90a2261e4d5c3"; // Dein API Key hier
 
-        // Funktion zur Abfahrtssuche
-        function searchStation() {
-            const station = document.getElementById('stationInput').value;
-            const departureList = document.getElementById('departureList');
-            departureList.innerHTML = ''; // Reset Liste
-
-            if (!station) {
-                alert("Bitte gib einen Bahnhof ein.");
-                return;
+    // Versuche, die Daten abzurufen
+    async function fetchTrainData(station) {
+        const response = await fetch(`${apiUrl}trainstation/${station}/arrivals`, {
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
             }
+        });
 
-            // API URL mit dem Bahnhof als Parameter
-            const requestUrl = `${apiUrl}?station=${encodeURIComponent(station)}&limit=10`;
-
-            // API Anfrage
-            fetch(requestUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        data.forEach(departure => {
-                            const listItem = document.createElement('li');
-                            const isNordbahn = departure.trainNumber && departure.trainNumber.startsWith("NBE");
-
-                            // Nordbahn-Züge hervorheben
-                            listItem.classList.add(isNordbahn ? 'nbe' : '');
-
-                            // Abfahrtsinformation einfügen
-                            listItem.innerHTML = `
-                                <strong>${departure.time}</strong> - ${departure.destination}<br>
-                                Zugnummer: ${departure.trainNumber}<br>
-                                Plattform: ${departure.platform || 'unbekannt'}
-                            `;
-
-                            departureList.appendChild(listItem);
-                        });
-                    } else {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = 'Keine Abfahrten gefunden.';
-                        departureList.appendChild(listItem);
-                    }
-                })
-                .catch(error => {
-                    const listItem = document.createElement('li');
-                    listItem.innerHTML = 'Fehler beim Abrufen der Daten.';
-                    departureList.appendChild(listItem);
-                });
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        } else {
+            console.error('Fehler beim Abrufen der Daten');
+            return null;
         }
-    </script>
+    }
+
+    // Funktion, um die Bahndaten auf der Webseite anzuzeigen
+    async function searchTrainData() {
+        const station = document.getElementById("stationSearch").value.trim();
+
+        if (!station) {
+            alert("Bitte gib einen Bahnhof ein.");
+            return;
+        }
+
+        const data = await fetchTrainData(station);
+
+        if (data && data.length > 0) {
+            displayTrainData(data);
+        } else {
+            document.getElementById("trainInfo").innerHTML = "<p>Keine Daten gefunden oder der Bahnhof ist nicht erreichbar.</p>";
+        }
+    }
+
+    // Anzeige der Bahndaten auf der Webseite
+    function displayTrainData(data) {
+        let htmlContent = "<h3>Ankünfte und Abfahrten</h3>";
+        htmlContent += "<table><tr><th>Zugnummer</th><th>Ziel</th><th>Abfahrt</th><th>Status</th></tr>";
+
+        data.forEach(train => {
+            const isDelayed = train.delay > 0;
+            htmlContent += `
+                <tr>
+                    <td>${train.trainNumber}</td>
+                    <td>${train.destination}</td>
+                    <td>${train.departure}</td>
+                    <td class="${isDelayed ? 'delayed' : ''}">${isDelayed ? `Verspätet um ${train.delay} min` : 'Pünktlich'}</td>
+                </tr>
+            `;
+        });
+
+        htmlContent += "</table>";
+        document.getElementById("trainInfo").innerHTML = htmlContent;
+    }
+</script>
+
 </body>
 </html>
