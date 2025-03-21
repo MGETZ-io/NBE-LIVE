@@ -3,160 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nordbahn Abfahrtstafel</title>
+    <meta name="theme-color" content="#005F8D">
+    <title>Abfahrtsanzeige Nordbahn Züge</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Nordbahn_Logo.svg/1280px-Nordbahn_Logo.svg.png">
     <style>
-        /* Grundlegendes Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Body-Styles */
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f9;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
             color: #333;
-            line-height: 1.6;
             margin: 0;
             padding: 0;
         }
-
-        /* Header-Styles */
         header {
-            background-color: #0078a0; /* Nordbahn Blau */
-            padding: 20px;
+            background-color: #005F8D;
+            padding: 15px;
+            color: white;
             text-align: center;
         }
-
-        .logo-container {
-            display: inline-block;
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
         }
-
-        .logo {
-            height: 40px;
-        }
-
-        /* Suchbereich */
-        .search-section {
-            background-color: #e5e9f2;
-            text-align: center;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .search-section h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #0078a0;
-        }
-
-        #stationSearch {
+        .search-box input {
             padding: 10px;
-            width: 80%;
-            margin-right: 10px;
-            border: 1px solid #ddd;
+            font-size: 16px;
+            border: 1px solid #ccc;
             border-radius: 5px;
+            width: 80%;
         }
-
-        #searchButton {
-            padding: 10px 20px;
-            background-color: #0078a0;
-            color: #fff;
+        .search-box button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #00A8E8;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-
-        #searchButton:hover {
-            background-color: #005f7f;
+        .search-box button:hover {
+            background-color: #007B8F;
         }
-
-        /* Abschnitt für die Abfahrten */
-        .departure-section {
-            padding: 20px;
-            text-align: center;
-        }
-
-        #departureList {
-            list-style: none;
+        .departure-list {
+            list-style-type: none;
             padding: 0;
         }
-
-        #departureList li {
-            padding: 10px;
-            background-color: #ffffff;
-            margin: 10px 0;
+        .departure-list li {
+            background-color: white;
+            margin: 5px;
+            padding: 15px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
-        #departureList li:nth-child(even) {
-            background-color: #f4f7f9;
+        .nbe {
+            background-color: #ffdb58;
+            border-left: 5px solid #ff9800;
         }
-
-        #departureList li:hover {
-            background-color: #dfe9f5;
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #005F8D;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <!-- Header mit Logo und Navigation -->
     <header>
-        <div class="logo-container">
-            <img src="https://www.nordbahn.de/fileadmin/_processed_/1/8/csm_Nordbahn_Logo_NAS_H_RGB_680x213_6d8f855aaa.png" alt="Nordbahn Logo" class="logo">
-        </div>
+        <h1>Abfahrtsanzeige Nordbahn Züge</h1>
     </header>
 
-    <!-- Suchbereich -->
-    <section class="search-section">
-        <h1>Abfahrten und Ankünfte für Nordbahn Züge</h1>
-        <input type="text" id="stationSearch" placeholder="Bahnhof suchen..." aria-label="Bahnhof suchen">
-        <button id="searchButton">Suchen</button>
-    </section>
+    <div class="search-box">
+        <input type="text" id="stationInput" placeholder="Gib einen Bahnhof ein...">
+        <button onclick="searchStation()">Suchen</button>
+    </div>
 
-    <!-- Anzeige der Abfahrten -->
-    <section class="departure-section">
-        <ul id="departureList"></ul>
-    </section>
+    <ul id="departureList" class="departure-list"></ul>
+
+    <footer>
+        <p>&copy; 2025 Nordbahn | Alle Rechte vorbehalten</p>
+    </footer>
 
     <script>
-        // Funktion zur Abfrage der Abfahrten und Ankünfte
-        async function getDepartures(station) {
-            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=54.0&longitude=10.0&hourly=temperature_2m`;
+        // Beispielhafte API: Öffentliche Zugabfahrt-Daten (ohne Schlüssel)
+        const apiUrl = "https://api.deutschebahn.com/free-data/v1/abfahrten"; // Hier eine öffentliche API einfügen
 
-            try {
-                const response = await fetch(proxyUrl + apiUrl);
-                if (!response.ok) {
-                    throw new Error("Fehler beim Abrufen der Daten");
-                }
+        function searchStation() {
+            const station = document.getElementById('stationInput').value;
+            const departureList = document.getElementById('departureList');
+            departureList.innerHTML = ''; // Reset Liste
 
-                const data = await response.json();
-                const departures = data.hourly;
+            if (!station) {
+                alert("Bitte gib einen Bahnhof ein.");
+                return;
+            }
 
-                const departureList = document.getElementById('departureList');
-                departureList.innerHTML = '';
+            // API URL mit dem Bahnhof als Parameter
+            const requestUrl = `${apiUrl}?station=${encodeURIComponent(station)}&limit=10`;
 
-                departures.forEach(departure => {
+            // API Anfrage
+            fetch(requestUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        data.forEach(departure => {
+                            const listItem = document.createElement('li');
+                            const isNordbahn = departure.trainNumber && departure.trainNumber.startsWith("NBE");
+
+                            listItem.classList.add(isNordbahn ? 'nbe' : ''); // Wenn NBE, dann spezielle Klasse
+
+                            listItem.innerHTML = `
+                                <strong>${departure.time}</strong> - ${departure.destination}<br>
+                                Zugnummer: ${departure.trainNumber}<br>
+                                Plattform: ${departure.platform || 'unbekannt'}
+                            `;
+
+                            departureList.appendChild(listItem);
+                        });
+                    } else {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = 'Keine Abfahrten gefunden.';
+                        departureList.appendChild(listItem);
+                    }
+                })
+                .catch(error => {
                     const listItem = document.createElement('li');
-                    listItem.textContent = `Abfahrt nach ${departure.destination} um ${departure.time}`;
+                    listItem.innerHTML = 'Fehler beim Abrufen der Daten.';
                     departureList.appendChild(listItem);
                 });
-            } catch (error) {
-                alert('Fehler beim Abrufen der Daten: ' + error.message);
-            }
         }
-
-        // Suchbutton-Event
-        document.getElementById('searchButton').addEventListener('click', () => {
-            const station = document.getElementById('stationSearch').value;
-            if (station) {
-                getDepartures(station);
-            } else {
-                alert('Bitte gib einen Bahnhof ein.');
-            }
-        });
     </script>
 </body>
 </html>
