@@ -3,100 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nordbahn Live-Daten</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Nordbahn - Routenplanung</title>
+    
+    <!-- Favicon und Apple Touch Icon für iOS Web App -->
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/a/a9/Nordbahn_logo.svg" />
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/a/a9/Nordbahn_logo.svg" />
+    
+    <style>
+        /* Layout-Stile für die Web-App */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #4a90e2; /* Blau als Hintergrundfarbe */
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        /* Stil für das Widget */
+        .hfs-widget {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
+    <div class="header">
+        <h1>Nordbahn Routenplanung</h1>
+    </div>
 
-    <header>
-        <h1>Nordbahn Live-Daten</h1>
-        <h2>Aktuelle Abfahrten und Ankünfte</h2>
-    </header>
+    <div class="container">
+        <h2>Planen Sie Ihre Route</h2>
+        
+        <!-- Das interaktive Widget zur Routenplanung (unverändert wie angegeben) -->
+        <div data-hfs-widget="true" data-hfs-widget-cfg-colorscheme="light" data-hfs-widget-tp="true" data-hfs-widget-tp-autosearch="true"></div>
+    </div>
 
-    <main>
-        <section>
-            <h3>Bahnhof auswählen</h3>
-            <input type="text" id="stationInput" placeholder="Z. B. Neumünster">
-            <button id="fetchDataBtn">Daten abrufen</button>
-        </section>
-
-        <section id="results">
-            <h3>Ergebnisse</h3>
-            <div id="arrivalData"></div>
-        </section>
-    </main>
-
-    <footer>
-        <p>Nordbahn Live-Daten - Powered by Deutsche Bahn API</p>
-    </footer>
-
-    <script>
-        const apiKey = '4529e0d138923d0303c90a2261e4d5c3'; // Dein API Key
-        const apiUrl = "https://cors-anywhere.herokuapp.com/https://api.deutschebahn.com/free-api/v1/arrivals?station=";
-
-        // Funktion zum Abrufen der Daten
-        async function fetchTrainData(station) {
-            const url = apiUrl + encodeURIComponent(station); // API-URL mit Station
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    displayTrainData(data);
-                } else {
-                    console.error('Fehler beim Abrufen der Daten', response.status);
-                    alert('Fehler beim Abrufen der Daten. Bitte versuche es später erneut.');
-                }
-            } catch (error) {
-                console.error('Fehler beim Abrufen der Daten:', error);
-                alert('Fehler beim Abrufen der Daten. Bitte versuche es später erneut.');
-            }
-        }
-
-        // Funktion zum Anzeigen der erhaltenen Daten
-        function displayTrainData(data) {
-            const arrivalDataContainer = document.getElementById('arrivalData');
-            arrivalDataContainer.innerHTML = ''; // Vorherige Ergebnisse löschen
-
-            if (data.length === 0) {
-                arrivalDataContainer.innerHTML = 'Keine Abfahrten oder Ankünfte gefunden.';
-                return;
-            }
-
-            // Erstelle eine Tabelle für die Ergebnisse
-            const table = document.createElement('table');
-            const headerRow = document.createElement('tr');
-            headerRow.innerHTML = '<th>Zugnummer</th><th>Abfahrt</th><th>Ziel</th><th>Status</th>';
-            table.appendChild(headerRow);
-
-            data.forEach(train => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${train.train.number}</td>
-                    <td>${new Date(train.expectedDeparture).toLocaleTimeString()}</td>
-                    <td>${train.station.name}</td>
-                    <td style="color: ${train.delay > 0 ? 'red' : 'green'};">${train.delay > 0 ? `Verspätung: ${train.delay} min` : 'Pünktlich'}</td>
-                `;
-                table.appendChild(row);
-            });
-
-            arrivalDataContainer.appendChild(table);
-        }
-
-        // Event Listener für den Button "Daten abrufen"
-        document.getElementById('fetchDataBtn').addEventListener('click', () => {
-            const station = document.getElementById('stationInput').value;
-            if (station) {
-                fetchTrainData(station);
-            } else {
-                alert('Bitte einen Bahnhof eingeben.');
-            }
-        });
-    </script>
-
+    <!-- Das JavaScript für das Widget -->
+    <script src="https://widget.na.sh/js/hfs-widget.js"></script>
 </body>
 </html>
